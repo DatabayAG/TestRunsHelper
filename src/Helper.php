@@ -18,7 +18,14 @@
 
 declare(strict_types=1);
 
-class ilTestRunsHelper
+namespace ILIAS\Plugin\TestRunsHelper;
+
+use ilObjTest;
+use ilDBInterface;
+use ilTestParticipantList;
+use ilStr;
+
+class Helper
 {
     private ilObjTest $test;
     private ilDBInterface $db;
@@ -55,7 +62,7 @@ class ilTestRunsHelper
 
     /**
      * Get a list of finished participants
-     * @return string[] names for display, indexed by active_id
+     * @return array<int, string> names for display, indexed by active_id
      */
     public function getFinishedParticipants(): array
     {

@@ -30,8 +30,9 @@ class ilTestRunsHelperUIHookGUI extends ilUIHookPluginGUI
         if ($a_part == 'tabs') {
             // must be done here because ctrl and tabs are not initialized for all calls
             global $DIC;
-            if ($DIC->ctrl()->getCmdClass() == 'iltestparticipantsgui') {
+            if (strtolower($DIC->ctrl()->getCmdClass()) == 'iltestparticipantstablegui') {
                 $gui = new ilTestRunsHelperGUI();
+                $gui->modifyToolbar();
             }
         }
     }

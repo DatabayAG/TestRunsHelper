@@ -21,6 +21,11 @@ declare(strict_types=1);
 use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 use ILIAS\HTTP\Wrapper\RequestWrapper;
+use ILIAS\Plugin\TestRunsHelper\Helper;
+use ILIAS\Plugin\TestRunsHelper\SelectForm;
+use ILIAS\UI\Implementation\Component\SignalGeneratorInterface;
+use ILIAS\Plugin\TestRunsHelper\SelectFormRenderer;
+use ILIAS\Plugin\TestRunsHelper\PluginRenderer;
 
 /**
  * @ilCtrl_IsCalledBy ilTestRunsHelperGUI: ilUIPluginRouterGUI
@@ -38,10 +43,12 @@ class ilTestRunsHelperGUI
     private RequestWrapper $query;
     private RequestWrapper $post;
     private ILIAS\Refinery\Factory $refinery;
+    private SignalGeneratorInterface $signal_generator;
 
     private int $ref_id;
     private ilObjTest $test;
-    private ilTestRunsHelper $helper;
+    private Helper $helper;
+    private PluginRenderer $plugin_renderer;
 
     public function __construct()
     {
@@ -57,6 +64,7 @@ class ilTestRunsHelperGUI
         $this->query = $DIC->http()->wrapper()->query();
         $this->post = $DIC->http()->wrapper()->post();
         $this->refinery = $DIC->refinery();
+        $this->signal_generator = $DIC["ui.signal_generator"];
 
         $this->lng->loadLanguageModule('assessment');
 
@@ -67,8 +75,19 @@ class ilTestRunsHelperGUI
         $this->ref_id = $this->query->retrieve('ref_id', $this->refinery->kindlyTo()->int());
 
         $this->test = new ilObjTest($this->ref_id);
-        $this->helper = new ilTestRunsHelper($this->test, $DIC->database());
+        $this->helper = new Helper($this->test, $DIC->database());
+
+        $this->plugin_renderer = new PluginRenderer(
+            $DIC["ui.factory"],
+            $DIC["xlas.custom_template_factory"],
+            $DIC["lng"],
+            $DIC["ui.javascript_binding"],
+            $DIC["refinery"],
+            $DIC["ui.pathresolver"],
+            $DIC["ui.data_factory"]
+        );
     }
+
 
     public function executeCommand()
     {
@@ -79,9 +98,32 @@ class ilTestRunsHelperGUI
     {
         if ($this->access->checkAccess('write', '', $this->ref_id)
             && $this->helper->canPassesBeContinued()
-            && $this->helper->hasFinishedPasses()) {
+            && $this->helper->hasFinishedPasses()
+        ) {
+            $form = new SelectForm(
+                $this->signal_generator,
+                $this->helper->getFinishedParticipants(),
+                'active_id',
+                $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilTestRunsHelperGUI'], 'reopenPasses')
+            );
+            $rendered_form = $this->ui_factory->legacy($this->plugin_renderer->render($form, $this->ui_renderer));
 
+            $modal = $this->ui_factory->modal()->roundtrip($this->plugin->txt('reopen_passes'), $rendered_form)
+                ->withActionButtons([
+                    $this->ui_factory->button()->standard($this->plugin->txt('reopen_passes'), '#')
+                        ->withOnClick($form->getSubmitSignal())
+                ]);
+
+            $button = $this->ui_factory->button()->standard($this->plugin->txt('reopen_passes'), '#')
+                ->withOnClick($modal->getShowSignal());
+
+            $this->tpl->addLightbox($this->ui_renderer->render($modal), 'iltestrunshelpermodal');
+            $this->toolbar->addComponent($button);
         }
     }
 
+    public function reopenPasses()
+    {
+
+    }
 }
