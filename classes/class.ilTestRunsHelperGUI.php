@@ -129,8 +129,8 @@ class ilTestRunsHelperGUI
                 $button = $button->withUnavailableAction();
             }
 
-            $this->tpl->addLightbox($this->ui_renderer->render($modal), 'ilTestRunsHelperGUIModal');
             $this->toolbar->addComponent($button);
+            $this->toolbar->addComponent($modal);
         }
     }
 
