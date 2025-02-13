@@ -32,15 +32,18 @@ class PluginRenderer extends AbstractComponentRenderer
         return [SelectForm::class];
     }
 
+    protected function getTemplatePath($name): string
+    {
+        return __DIR__ . '/../tpl/' . $name;
+    }
+
     public function render(Component $component, Renderer $default_renderer): string
     {
         $this->checkComponent($component);
-        switch (true) {
-            case ($component instanceof SelectForm):
-                return $this->renderSelectForm($component, $default_renderer);
-            default:
-                throw new LogicException("Cannot render '" . get_class($component) . "'");
+        if ($component instanceof SelectForm) {
+            return $this->renderSelectForm($component, $default_renderer);
         }
+        return '';
     }
 
     /**
@@ -66,13 +69,8 @@ class PluginRenderer extends AbstractComponentRenderer
         $tpl->setVariable("SUBMIT_SIGNAL", $component->getSubmitSignal()->getId());
         $tpl->setVariable('POST_URL', $component->getPostUrl());
         $tpl->setVariable('POST_VAR', $component->getPostVar());
-        ;
+        $tpl->setVariable('SELECT_ALL_TXT', $this->txt('select_all'));
 
         return $tpl->get();
-    }
-
-    protected function getTemplatePath($name): string
-    {
-        return __DIR__ . '/../tpl/' . $name;
     }
 }

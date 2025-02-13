@@ -24,7 +24,6 @@ use ILIAS\HTTP\Wrapper\RequestWrapper;
 use ILIAS\Plugin\TestRunsHelper\Helper;
 use ILIAS\Plugin\TestRunsHelper\SelectForm;
 use ILIAS\UI\Implementation\Component\SignalGeneratorInterface;
-use ILIAS\Plugin\TestRunsHelper\SelectFormRenderer;
 use ILIAS\Plugin\TestRunsHelper\PluginRenderer;
 
 /**
@@ -43,6 +42,7 @@ class ilTestRunsHelperGUI
     private RequestWrapper $query;
     private RequestWrapper $post;
     private ILIAS\Refinery\Factory $refinery;
+    private ilErrorHandling $error;
     private SignalGeneratorInterface $signal_generator;
 
     private int $ref_id;
@@ -64,66 +64,119 @@ class ilTestRunsHelperGUI
         $this->query = $DIC->http()->wrapper()->query();
         $this->post = $DIC->http()->wrapper()->post();
         $this->refinery = $DIC->refinery();
+        $this->error = $DIC['ilErr'];
         $this->signal_generator = $DIC["ui.signal_generator"];
-
-        $this->lng->loadLanguageModule('assessment');
-
-        /** @var ilComponentFactory $factory */
-        $factory = $DIC["component.factory"];
-        $this->plugin = $factory->getPlugin('teruhe');
-
-        $this->ref_id = $this->query->retrieve('ref_id', $this->refinery->kindlyTo()->int());
-
-        $this->test = new ilObjTest($this->ref_id);
-        $this->helper = new Helper($this->test, $DIC->database());
-
+        $this->plugin = $DIC["component.factory"]->getPlugin('teruhe');
         $this->plugin_renderer = new PluginRenderer(
             $DIC["ui.factory"],
-            $DIC["xlas.custom_template_factory"],
+            $DIC["ui.template_factory"],
             $DIC["lng"],
             $DIC["ui.javascript_binding"],
             $DIC["refinery"],
             $DIC["ui.pathresolver"],
             $DIC["ui.data_factory"]
         );
-    }
 
+        $this->ref_id = $this->query->retrieve('ref_id', $this->refinery->kindlyTo()->int());
+        $this->ctrl->saveParameter($this, 'ref_id');
+
+        $this->test = new ilObjTest($this->ref_id);
+        $this->helper = new Helper($this->test, $DIC->database());
+    }
 
     public function executeCommand()
     {
-    }
+        if (!$this->access->checkAccess('write', '', $this->ref_id)) {
+            $this->error->raiseError($this->lng->txt('permission_denied'), $this->error->MESSAGE);
+        }
 
+        switch ($cmd = $this->ctrl->getCmd()) {
+            case 'continuePasses':
+                $this->$cmd();
+                break;
+
+            default:
+                $this->error->raiseError(
+                    $this->lng->txt('msg_unknown_value') . ' ' . $cmd,
+                    $this->error->MESSAGE
+                );
+        }
+    }
 
     public function modifyToolbar()
     {
         if ($this->access->checkAccess('write', '', $this->ref_id)
             && $this->helper->canPassesBeContinued()
-            && $this->helper->hasFinishedPasses()
         ) {
             $form = new SelectForm(
                 $this->signal_generator,
                 $this->helper->getFinishedParticipants(),
                 'active_id',
-                $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilTestRunsHelperGUI'], 'reopenPasses')
+                $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilTestRunsHelperGUI'], 'continuePasses')
             );
             $rendered_form = $this->ui_factory->legacy($this->plugin_renderer->render($form, $this->ui_renderer));
 
             $modal = $this->ui_factory->modal()->roundtrip($this->plugin->txt('reopen_passes'), $rendered_form)
                 ->withActionButtons([
-                    $this->ui_factory->button()->standard($this->plugin->txt('reopen_passes'), '#')
+                    $this->ui_factory->button()->primary($this->plugin->txt('reopen_passes'), '#')
                         ->withOnClick($form->getSubmitSignal())
                 ]);
 
             $button = $this->ui_factory->button()->standard($this->plugin->txt('reopen_passes'), '#')
                 ->withOnClick($modal->getShowSignal());
 
-            $this->tpl->addLightbox($this->ui_renderer->render($modal), 'iltestrunshelpermodal');
+            if (!$this->helper->hasFinishedPasses()) {
+                $button = $button->withUnavailableAction();
+            }
+
+            $this->tpl->addLightbox($this->ui_renderer->render($modal), 'ilTestRunsHelperGUIModal');
             $this->toolbar->addComponent($button);
         }
     }
 
-    public function reopenPasses()
+    private function continuePasses()
     {
+        $active_ids = array_intersect(
+            $this->post->retrieve('active_id', $this->refinery->byTrying([
+                $this->refinery->to()->listOf($this->refinery->kindlyTo()->int()),
+                $this->refinery->always([])
+            ])),
+            array_keys($this->helper->getFinishedParticipants())
+        );
 
+        if (empty($active_ids)) {
+            $this->tpl->setOnScreenMessage(
+                ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE,
+                $this->plugin->txt('please_select_participant'),
+                true
+            );
+        } else {
+            $affected = $this->helper->continuePasses($active_ids);
+
+            if ($affected == 0) {
+                $this->tpl->setOnScreenMessage(
+                    ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE,
+                    sprintf($this->plugin->txt('passes_reopened'), 0),
+                    true
+                );
+            } elseif ($affected == 1) {
+                $this->tpl->setOnScreenMessage(
+                    ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+                    $this->plugin->txt('pass_reopened') . ' '
+                    . $this->plugin->txt('time_extension_note'),
+                    true
+                );
+            } else {
+                $this->tpl->setOnScreenMessage(
+                    ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+                    sprintf($this->plugin->txt('passes_reopened'), $affected) . ' '
+                    . $this->plugin->txt('time_extension_note'),
+                    true
+                );
+            }
+        }
+
+        $this->ctrl->setParameterByClass('ilTestParticipantsGUI', 'ref_id', $this->ref_id);
+        $this->ctrl->redirectByClass(['ilRepositoryGUI', 'ilObjTestGUI', 'ilTestDashboardGUI', 'ilTestParticipantsGUI']);
     }
 }

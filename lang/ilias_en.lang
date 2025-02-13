@@ -15,3 +15,8 @@
 ********************************************************************
 */
 <!-- language file start -->
+pass_reopened#:#Test pass continued.
+passes_reopened#:#%s Test passes continued.
+please_select_participant#:#Please select one or more participants.
+reopen_passes#:#Continue Test Passes
+time_extension_note#:#You may need to set a time extension so that the test can be processed further.

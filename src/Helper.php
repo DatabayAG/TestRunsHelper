@@ -24,6 +24,7 @@ use ilObjTest;
 use ilDBInterface;
 use ilTestParticipantList;
 use ilStr;
+use ilDBConstants;
 
 class Helper
 {
@@ -74,12 +75,33 @@ class Helper
 
         $finished = [];
         foreach ($rows as $row) {
-            $finished[$row['active_id']] = $row['name'] . ($row['login'] ? ' [' . $row['login'] . ']' : '');
+            if (isset($row['active_id'])) {
+                $finished[$row['active_id']] = $row['name'] . (empty($row['login']) ? '' : ' [' . $row['login'] . ']');
+            }
         }
 
         return $finished;
     }
 
+    /**
+     * Continue the test passes of participants given by active ids
+     * @param int[] $active_ids
+     * @return int the number of affected participants
+     */
+    public function continuePasses(array $active_ids): int
+    {
+        $query = "
+            UPDATE tst_active
+            SET tries = 0, submitted = 0, submittimestamp = NULL, last_finished_pass = NULL
+            WHERE test_fi = " . $this->db->quote($this->test->getTestId()) . "
+            AND " . $this->db->in('active_id', $active_ids, false, ilDBConstants::T_INTEGER);
+
+        return $this->db->manipulate($query);
+    }
+
+    /**
+     * Get a cached participants list of the test
+     */
     private function getParticipantsList(): ilTestParticipantList
     {
         if (!isset($this->participants_list)) {

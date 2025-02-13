@@ -1,24 +1,24 @@
 <form id="{ID}" action="{POST_URL}" role="form" method="post" novalidate="novalidate">
-    <!-- BEGIN item -->
-    <div>
-        <input id={FORM_ID}-{ITEM_ID}" type="checkbox" name="{POST_VAR}[]" value = "{ITEM_ID}" />
-        <label for="{FORM_ID}-{ITEM_ID}>">{ITEM_TEXT}</label>
-    </div>
-    <!-- END item -->
-    <br>
+    <ul class="il-input-multiselect">
+        <!-- BEGIN item -->
+        <li class="il-input-multiselect">
+            <input id="{FORM_ID}-{ITEM_ID}" type="checkbox" name="{POST_VAR}[]" value="{ITEM_ID}" />
+            <label for="{FORM_ID}-{ITEM_ID}">{ITEM_TEXT}</label>
+        </li>
+        <!-- END item -->
+    </ul>
+
     <input type="checkbox" name="{ID}-all" id="{ID}-all" value="1"
            onClick="il.Util.setChecked('{ID}', '{POST_VAR}', document.getElementById('{ID}-all').checked);" />
-    <label for="{ID}-all">Select All</label>
+    <label for="{ID}-all">{SELECT_ALL_TXT}</label>
 </form>
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {
-    // jquery needed because signal is triggered with jquery
+    // jquery needed because signal is triggered by ui button with jquery
     $(document).on('{SUBMIT_SIGNAL}', function () {
       const form = document.getElementById('{ID}');
       form.requestSubmit();
     });
-
-
   });
 </script>

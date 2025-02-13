@@ -15,3 +15,8 @@
 ********************************************************************
 */
 <!-- language file start -->
+pass_reopened#:#Testlauf fortgesetzt.
+passes_reopened#:#%s Testläufe fortgesetzt.
+please_select_participant#:#Bitte wählen Sie einen oder mehrere Teilnehmer.
+reopen_passes#:#Testdurchläufe fortsetzen
+time_extension_note#:#Eventuell müssen Sie eine Zeitverlängerung einstellen, damit der Test weiter bearbeitet werden kann.
