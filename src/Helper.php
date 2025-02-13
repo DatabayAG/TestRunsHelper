@@ -70,8 +70,8 @@ class Helper
         // this builds the names
         $rows = $this->getParticipantsList()->getParticipantsTableRows();
 
-        $rows = array_filter($rows, fn ($row) => $row['unfinished'] == 0);
-        uasort($rows, fn ($a, $b) => ilStr::strCmp($a['name'], $b['name']));
+        $rows = array_filter($rows, fn($row) => $row['unfinished'] == 0);
+        uasort($rows, fn($a, $b) => ilStr::strCmp($a['name'], $b['name']));
 
         $finished = [];
         foreach ($rows as $row) {

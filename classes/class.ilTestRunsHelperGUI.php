@@ -69,12 +69,14 @@ class ilTestRunsHelperGUI
         $this->plugin = $DIC["component.factory"]->getPlugin('teruhe');
         $this->plugin_renderer = new PluginRenderer(
             $DIC["ui.factory"],
-            $DIC["ui.template_factory"],
+            $DIC["xlas.custom_template_factory"],
             $DIC["lng"],
             $DIC["ui.javascript_binding"],
             $DIC["refinery"],
             $DIC["ui.pathresolver"],
-            $DIC["ui.data_factory"]
+            $DIC["ui.data_factory"],
+            $DIC["help.text_retriever"],
+            $DIC["ui.upload_limit_resolver"]
         );
 
         $this->ref_id = $this->query->retrieve('ref_id', $this->refinery->kindlyTo()->int());
@@ -129,8 +131,8 @@ class ilTestRunsHelperGUI
                 $button = $button->withUnavailableAction();
             }
 
-            $this->tpl->addLightbox($this->ui_renderer->render($modal), 'ilTestRunsHelperGUIModal');
             $this->toolbar->addComponent($button);
+            $this->toolbar->addComponent($modal);
         }
     }
 
