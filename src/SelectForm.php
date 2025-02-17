@@ -22,14 +22,17 @@ namespace ILIAS\Plugin\TestRunsHelper;
 
 use ILIAS\UI\Component\JavaScriptBindable;
 use ILIAS\UI\Component\Input\Container\Form\FormWithPostURL;
+use ILIAS\UI\Implementation\Component\ComponentHelper;
 use ILIAS\UI\Implementation\Component\JavaScriptBindable as JavaScriptBindableTrait;
 use ILIAS\UI\Implementation\Component\Input\Container\Form\HasPostURL;
 use ILIAS\UI\Implementation\Component\SignalGeneratorInterface;
 use ILIAS\UI\Component\Signal;
 
+
 class SelectForm implements JavaScriptBindable
 {
     use JavaScriptBindableTrait;
+    use ComponentHelper;
 
     protected Signal $submit_signal;
 
@@ -48,11 +51,6 @@ class SelectForm implements JavaScriptBindable
         $this->indexed_items = $indexed_items;
         $this->post_var = $post_var;
         $this->post_url = $post_url;
-    }
-
-    public function getCanonicalName(): string
-    {
-        return 'SelectForm';
     }
 
     public function getIndexedItems(): array
