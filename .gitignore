@@ -1,0 +1,8 @@
+# Files to be ignored for versioning with git
+# Shell wildcards are possible
+# / is the project root
+
+# Don't ignore .gitkeep and .htaccess files
+# these are used to commit empty directories
+!.gitkeep
+!.htaccess
