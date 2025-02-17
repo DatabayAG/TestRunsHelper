@@ -68,11 +68,11 @@ class ilTestRunsHelperGUI
         $this->signal_generator = $DIC["ui.signal_generator"];
         $this->plugin = $DIC["component.factory"]->getPlugin('teruhe');
         $this->plugin_renderer = new PluginRenderer(
-            $DIC["ui.factory"],
+            $DIC->ui()->factory(),
             $DIC["xlas.custom_template_factory"],
-            $DIC["lng"],
+            $DIC->language(),
             $DIC["ui.javascript_binding"],
-            $DIC["refinery"],
+            $DIC->refinery(),
             $DIC["ui.pathresolver"],
             $DIC["ui.data_factory"],
             $DIC["help.text_retriever"],
