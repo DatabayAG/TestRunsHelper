@@ -69,7 +69,7 @@ class ilTestRunsHelperGUI
         $this->plugin = $DIC["component.factory"]->getPlugin('teruhe');
         $this->plugin_renderer = new PluginRenderer(
             $DIC->ui()->factory(),
-            $DIC["xlas.custom_template_factory"],
+            $DIC["ui.template_factory"],
             $DIC->language(),
             $DIC["ui.javascript_binding"],
             $DIC->refinery(),
