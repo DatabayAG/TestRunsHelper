@@ -176,7 +176,7 @@ class ilTestRunsHelperGUI
             }
         }
 
-        $this->ctrl->setParameterByClass('ilTestParticipantsGUI', 'ref_id', $this->ref_id);
-        $this->ctrl->redirectByClass(['ilRepositoryGUI', 'ilObjTestGUI', 'ilTestDashboardGUI', 'ilTestParticipantsGUI']);
+        $this->ctrl->setParameterByClass(ilTestParticipantsGUI::class, 'ref_id', $this->ref_id);
+        $this->ctrl->redirectByClass([ilRepositoryGUI::class, ilObjTestGUI::class, ilTestDashboardGUI::class, ilTestParticipantsGUI::class]);
     }
 }
