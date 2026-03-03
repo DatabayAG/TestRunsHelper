@@ -18,6 +18,22 @@
 
 declare(strict_types=1);
 
+use ILIAS\DI\Container;
+use ILIAS\Plugin\TestRunsHelper\PluginRenderer;
+use ILIAS\UI\Implementation\Render\ilJavaScriptBinding;
+
 class ilTestRunsHelperPlugin extends ilUserInterfaceHookPlugin
 {
+    public function exchangeUIRendererAfterInitialization(Container $dic): Closure
+    {
+        $renderer = $dic->raw('ui.renderer');
+
+        return function () use ($dic, $renderer): \ILIAS\UI\Renderer {
+            return new PluginRenderer(
+                $renderer($dic),
+                new ilJavaScriptBinding($dic->ui()->mainTemplate()),
+                $dic->language()
+            );
+        };
+    }
 }

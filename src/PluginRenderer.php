@@ -20,16 +20,20 @@ declare(strict_types=1);
 
 namespace ILIAS\Plugin\TestRunsHelper;
 
-use ILIAS\UI\Implementation\Render\AbstractComponentRenderer;
 use ILIAS\UI\Renderer;
-use ILIAS\UI\Component\Component;
-use LogicException;
+use ILIAS\UI\Implementation\Render\DecoratedRenderer;
+use ilTemplate;
+use ILIAS\UI\Implementation\Render\JavaScriptBinding;
+use ILIAS\Language\Language;
 
-class PluginRenderer extends AbstractComponentRenderer
+class PluginRenderer extends DecoratedRenderer
 {
-    protected function getComponentInterfaceName(): array
-    {
-        return [SelectForm::class];
+    public function __construct(
+        Renderer $default,
+        private readonly JavaScriptBinding $js_binding,
+        private readonly Language $language
+    ) {
+        parent::__construct($default);
     }
 
     protected function getTemplatePath($name): string
@@ -37,12 +41,12 @@ class PluginRenderer extends AbstractComponentRenderer
         return __DIR__ . '/../tpl/' . $name;
     }
 
-    public function render(Component $component, Renderer $default_renderer): string
+    protected function manipulateRendering($component, Renderer $root): ?string
     {
         if ($component instanceof SelectForm) {
-            return $this->renderSelectForm($component, $default_renderer);
+            return $this->renderSelectForm($component);
         }
-        return '';
+        return null;
     }
 
     /**
@@ -50,10 +54,11 @@ class PluginRenderer extends AbstractComponentRenderer
      * The form is automatically submitted when its signal is triggered
      * @see \ILIAS\UI\Implementation\Component\Input\Container\Form\Renderer::renderNoSubmit
      */
-    private function renderSelectForm(SelectForm $component, Renderer $default_renderer): string
+    private function renderSelectForm(SelectForm $component): string
     {
-        $form_id = $this->createId();
-        $tpl = $this->getTemplate("tpl.select_form.html", true, true);
+        $form_id = $this->js_binding->createId();
+
+        $tpl = new ilTemplate($this->getTemplatePath('tpl.select_form.html'), true, true);
 
         foreach ($component->getIndexedItems() as $item_id => $item_text) {
             $tpl->setCurrentBlock('item');
@@ -68,7 +73,7 @@ class PluginRenderer extends AbstractComponentRenderer
         $tpl->setVariable("SUBMIT_SIGNAL", $component->getSubmitSignal()->getId());
         $tpl->setVariable('POST_URL', $component->getPostUrl());
         $tpl->setVariable('POST_VAR', $component->getPostVar());
-        $tpl->setVariable('SELECT_ALL_TXT', $this->txt('select_all'));
+        $tpl->setVariable('SELECT_ALL_TXT', $this->language->txt('select_all'));
 
         return $tpl->get();
     }
