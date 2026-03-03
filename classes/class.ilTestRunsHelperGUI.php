@@ -72,7 +72,6 @@ class ilTestRunsHelperGUI
             $DIC["ui.template_factory"],
             $DIC->language(),
             $DIC["ui.javascript_binding"],
-            $DIC->refinery(),
             $DIC["ui.pathresolver"],
             $DIC["ui.data_factory"],
             $DIC["help.text_retriever"],
@@ -179,6 +178,6 @@ class ilTestRunsHelperGUI
         }
 
         $this->ctrl->setParameterByClass(ilTestParticipantsGUI::class, 'ref_id', $this->ref_id);
-        $this->ctrl->redirectByClass([ilRepositoryGUI::class, ilObjTestGUI::class, ilTestDashboardGUI::class, ilTestParticipantsGUI::class]);
+        $this->ctrl->redirectByClass([ilRepositoryGUI::class, ilObjTestGUI::class, ilTestParticipantsGUI::class]);
     }
 }

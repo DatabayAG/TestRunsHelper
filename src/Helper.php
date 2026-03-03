@@ -25,6 +25,7 @@ use ilDBInterface;
 use ilTestParticipantList;
 use ilStr;
 use ilDBConstants;
+use ilTestParticipant;
 
 class Helper
 {
@@ -63,24 +64,26 @@ class Helper
 
     /**
      * Get a list of finished participants
-     * @return array<int, string> names for display, indexed by active_id
+     * @return array<ilTestParticipant> names for display, indexed by active_id
      */
     public function getFinishedParticipants(): array
     {
-        // this builds the names
-        $rows = $this->getParticipantsList()->getParticipantsTableRows();
-
-        $rows = array_filter($rows, fn($row) => $row['unfinished'] == 0);
-        uasort($rows, fn($a, $b) => ilStr::strCmp($a['name'], $b['name']));
+        $list = $this->getParticipantsList();
 
         $finished = [];
-        foreach ($rows as $row) {
-            if (isset($row['active_id'])) {
-                $finished[$row['active_id']] = $row['name'] . (empty($row['login']) ? '' : ' [' . $row['login'] . ']');
+        foreach ($list as $p) {
+            if ($p->getActiveId() !== null && !$p->hasUnfinishedPasses()) {
+                $finished[] = $p;
             }
         }
+        uasort($finished, fn(ilTestParticipant $a, ilTestParticipant $b) => ilStr::strCmp($list->buildFullname($a), $list->buildFullname($b)));
 
-        return $finished;
+        $names = [];
+        foreach ($finished as $p) {
+            $names[$p->getActiveId()] = $list->buildFullname($p) . (empty($p->getLogin()) ? '' : ' [' . $p->getLogin() . ']');
+        }
+
+        return $names;
     }
 
     /**

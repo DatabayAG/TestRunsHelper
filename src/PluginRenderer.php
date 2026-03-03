@@ -39,7 +39,6 @@ class PluginRenderer extends AbstractComponentRenderer
 
     public function render(Component $component, Renderer $default_renderer): string
     {
-        $this->checkComponent($component);
         if ($component instanceof SelectForm) {
             return $this->renderSelectForm($component, $default_renderer);
         }
