@@ -19,12 +19,12 @@
 declare(strict_types=1);
 
 use ILIAS\UI\Factory;
-use ILIAS\UI\Renderer;
 use ILIAS\HTTP\Wrapper\RequestWrapper;
 use ILIAS\Plugin\TestRunsHelper\Helper;
 use ILIAS\Plugin\TestRunsHelper\SelectForm;
 use ILIAS\UI\Implementation\Component\SignalGeneratorInterface;
 use ILIAS\Plugin\TestRunsHelper\PluginRenderer;
+use ILIAS\UI\Implementation\Component\SignalGenerator;
 
 /**
  * @ilCtrl_IsCalledBy ilTestRunsHelperGUI: ilUIPluginRouterGUI
@@ -37,7 +37,6 @@ class ilTestRunsHelperGUI
     private ilLanguage $lng;
     private ilToolbarGUI $toolbar;
     private Factory $ui_factory;
-    private Renderer $ui_renderer;
     private ilPlugin $plugin;
     private RequestWrapper $query;
     private RequestWrapper $post;
@@ -60,23 +59,12 @@ class ilTestRunsHelperGUI
         $this->toolbar = $DIC->toolbar();
         $this->lng = $DIC->language();
         $this->ui_factory = $DIC->ui()->factory();
-        $this->ui_renderer = $DIC->ui()->renderer();
         $this->query = $DIC->http()->wrapper()->query();
         $this->post = $DIC->http()->wrapper()->post();
         $this->refinery = $DIC->refinery();
         $this->error = $DIC['ilErr'];
-        $this->signal_generator = $DIC["ui.signal_generator"];
+        $this->signal_generator = new SignalGenerator();
         $this->plugin = $DIC["component.factory"]->getPlugin('teruhe');
-        $this->plugin_renderer = new PluginRenderer(
-            $DIC->ui()->factory(),
-            $DIC["ui.template_factory"],
-            $DIC->language(),
-            $DIC["ui.javascript_binding"],
-            $DIC["ui.pathresolver"],
-            $DIC["ui.data_factory"],
-            $DIC["help.text_retriever"],
-            $DIC["ui.upload_limit_resolver"]
-        );
 
         $this->ref_id = $this->query->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         $this->ctrl->saveParameter($this, 'ref_id');
@@ -115,9 +103,8 @@ class ilTestRunsHelperGUI
                 'active_id',
                 $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilTestRunsHelperGUI'], 'continuePasses')
             );
-            $rendered_form = $this->ui_factory->legacy($this->plugin_renderer->render($form, $this->ui_renderer));
 
-            $modal = $this->ui_factory->modal()->roundtrip($this->plugin->txt('reopen_passes'), $rendered_form)
+            $modal = $this->ui_factory->modal()->roundtrip($this->plugin->txt('reopen_passes'), $form)
                 ->withActionButtons([
                     $this->ui_factory->button()->primary($this->plugin->txt('reopen_passes'), '#')
                         ->withOnClick($form->getSubmitSignal())
