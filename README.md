@@ -4,13 +4,15 @@
 
 | Component | Version(s)                                                                                    | Link                      |
 |-----------|-----------------------------------------------------------------------------------------------|---------------------------|
-| PHP       | ![](https://img.shields.io/badge/8.1-blue.svg) ![](https://img.shields.io/badge/8.2-blue.svg) | [PHP](https://php.net)    |
-| ILIAS     | ![](https://img.shields.io/badge/9.x-orange.svg)                                              | [ILIAS](https://ilias.de) |
+| PHP       | ![](https://img.shields.io/badge/8.3-blue.svg) ![](https://img.shields.io/badge/8.4-blue.svg) | [PHP](https://php.net)    |
+| ILIAS     | ![](https://img.shields.io/badge/11.x-orange.svg)                                             | [ILIAS](https://ilias.de) |
 
 Stable releases of this plugin are published in different branches of this Git repository:
 
 * **release1_ilias8** works with ILIAS 8 
 * **release2_ilias9** works with ILIAS 9
+* **release3_ilias10** works with ILIAS 10
+* **release4_ilias11** works with ILIAS 11
 
 ## Purpose
 
